@@ -22,7 +22,8 @@ static uint32_t GetUs(void) { return htim2.Instance->CNT; }
 
 static uint32_t ElapsedUs(uint32_t from) {
     uint32_t now = GetUs();
-    return (now >= from) ? (now - from) : (65536u - from + now);
+    /* TIM2 period = 19999, so counter wraps at 20000 */
+    return (now >= from) ? (now - from) : (20000u - from + now);
 }
 
 void HCSR04_Init(void) {

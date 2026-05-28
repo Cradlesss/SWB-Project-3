@@ -154,11 +154,11 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim7);
   UART_SendText("TIM7 ok\r\n");
 
-  HCSR04_Init();
-  UART_SendText("HCSR04 ok\r\n");
-
-  Servo_Init();
+  Servo_Init();   /* starts TIM2 counter + CH3 PWM on PB10 */
   UART_SendText("Servo ok (center 90 deg)\r\n");
+
+  HCSR04_Init();  /* enables TIM2 base (already running, safe) */
+  UART_SendText("HCSR04 ok\r\n");
 
   UART_SendText("TFT init...\r\n");
   TFT_Init();
