@@ -11,6 +11,8 @@ build/
 *.elf
 *.bin
 *.hex
+*.a
+*.i
 
 # CubeIDE metadata
 .metadata/
@@ -27,6 +29,7 @@ Thumbs.db
 # Backup files
 *~
 *.bak
+*.orig
 
 # Toolchain / linker outputs
 *.list
