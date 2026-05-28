@@ -10,16 +10,16 @@ extern volatile uint32_t appTickMs;
 
 typedef enum { SC_IDLE, SC_SETTLING, SC_MEASURING } ScState;
 
-static ScState  scState    = SC_IDLE;
-static int      curSlot    = 0;
-static uint32_t settleTs   = 0;
-static uint32_t settleMs   = SCANNER_SETTLE_MIN;
-static int      running    = 0;
-static int      sweepDone  = 0;
+static ScState scState = SC_IDLE;
+static int curSlot = 0;
+static uint32_t settleTs = 0;
+static uint32_t settleMs = SCANNER_SETTLE_MIN;
+static int running = 0;
+static int sweepDone = 0;
 
-static int     leftAngle   = 30;
-static int     rightAngle  = 150;
-static int     sweepTimeMs = 4000;
+static int leftAngle = 30;
+static int rightAngle = 150;
+static int sweepTimeMs = 4000;
 
 static int32_t filtered[SCANNER_NUM_SLOTS];
 

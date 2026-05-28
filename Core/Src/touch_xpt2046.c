@@ -2,6 +2,9 @@
 #include "tft_ili9341.h"
 #include "main.h"
 #include "spi.h"
+#include <stdio.h>
+
+extern void UART_SendText(const char *text);
 
 /* XPT2046 channel commands (12-bit differential, power-down between) */
 #define CMD_X   0xD0u
@@ -29,6 +32,7 @@ uint8_t Touch_IsPressed(void) {
 uint8_t Touch_GetXY(uint16_t *sx, uint16_t *sy) {
     uint16_t rawX, rawY;
     int32_t  mx, my;
+    char     buf[56];
 
     if (!Touch_IsPressed()) return 0;
 
@@ -39,8 +43,11 @@ uint8_t Touch_GetXY(uint16_t *sx, uint16_t *sy) {
     rawX = (uint16_t)((rawX + ReadChannel(CMD_X)) / 2u);
     rawY = (uint16_t)((rawY + ReadChannel(CMD_Y)) / 2u);
 
+    /* Log raw ADC values – use these to calibrate MIN/MAX in touch_xpt2046.h */
+    snprintf(buf, sizeof(buf), "RAW: X=%4u Y=%4u\r\n", rawX, rawY);
+    UART_SendText(buf);
+
 #if TOUCH_SWAP_XY
-    /* Landscape: raw Y maps to screen X, raw X maps to screen Y */
     mx = ((int32_t)rawY - TOUCH_Y_MIN) * TFT_W / (TOUCH_X_MAX - TOUCH_X_MIN);
     my = ((int32_t)rawX - TOUCH_X_MIN) * TFT_H / (TOUCH_Y_MAX - TOUCH_Y_MIN);
 #else

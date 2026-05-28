@@ -27,6 +27,15 @@ extern volatile uint32_t appTickMs;
 #define COL_PLUS 212
 #define COL_UNIT 254
 
+/* Touch hit areas – larger than visual buttons to compensate for calibration */
+#define HIT_W   60   /* wider than BTN_W */
+#define HIT_H   38   /* taller than BTN_H */
+#define HIT_MINUS_X  (COL_MINUS - 12)
+#define HIT_PLUS_X   (COL_PLUS  - 12)
+#define HIT_ROW1_Y   (ROW1_Y - 6)
+#define HIT_ROW2_Y   (ROW2_Y - 6)
+#define HIT_ROW3_Y   (ROW3_Y - 6)
+
 /* START button */
 #define START_X   80
 #define START_Y  185
@@ -127,36 +136,36 @@ static void ConfigScreen_Task(void) {
     }
 
     /* L ANGLE */
-    if (TouchInRect(tx, ty, COL_MINUS, ROW1_Y, BTN_W, BTN_H)) {
+    if (TouchInRect(tx, ty, HIT_MINUS_X, HIT_ROW1_Y, HIT_W, HIT_H)) {
         cfgLeftAngle -= 5;
         if (cfgLeftAngle < 0) cfgLeftAngle = 0;
         needValDraw = 1;
         { char buf[32]; snprintf(buf, sizeof(buf), "L_ANG- -> %d\r\n", cfgLeftAngle); UART_SendText(buf); }
-    } else if (TouchInRect(tx, ty, COL_PLUS, ROW1_Y, BTN_W, BTN_H)) {
+    } else if (TouchInRect(tx, ty, HIT_PLUS_X, HIT_ROW1_Y, HIT_W, HIT_H)) {
         cfgLeftAngle += 5;
         if (cfgLeftAngle > cfgRightAngle - 10) cfgLeftAngle = cfgRightAngle - 10;
         needValDraw = 1;
         { char buf[32]; snprintf(buf, sizeof(buf), "L_ANG+ -> %d\r\n", cfgLeftAngle); UART_SendText(buf); }
     }
     /* R ANGLE */
-    else if (TouchInRect(tx, ty, COL_MINUS, ROW2_Y, BTN_W, BTN_H)) {
+    else if (TouchInRect(tx, ty, HIT_MINUS_X, HIT_ROW2_Y, HIT_W, HIT_H)) {
         cfgRightAngle -= 5;
         if (cfgRightAngle < cfgLeftAngle + 10) cfgRightAngle = cfgLeftAngle + 10;
         needValDraw = 1;
         { char buf[32]; snprintf(buf, sizeof(buf), "R_ANG- -> %d\r\n", cfgRightAngle); UART_SendText(buf); }
-    } else if (TouchInRect(tx, ty, COL_PLUS, ROW2_Y, BTN_W, BTN_H)) {
+    } else if (TouchInRect(tx, ty, HIT_PLUS_X, HIT_ROW2_Y, HIT_W, HIT_H)) {
         cfgRightAngle += 5;
         if (cfgRightAngle > 180) cfgRightAngle = 180;
         needValDraw = 1;
         { char buf[32]; snprintf(buf, sizeof(buf), "R_ANG+ -> %d\r\n", cfgRightAngle); UART_SendText(buf); }
     }
     /* SWEEP */
-    else if (TouchInRect(tx, ty, COL_MINUS, ROW3_Y, BTN_W, BTN_H)) {
+    else if (TouchInRect(tx, ty, HIT_MINUS_X, HIT_ROW3_Y, HIT_W, HIT_H)) {
         cfgSweepSec--;
         if (cfgSweepSec < 1) cfgSweepSec = 1;
         needValDraw = 1;
         { char buf[32]; snprintf(buf, sizeof(buf), "SWEEP- -> %ds\r\n", cfgSweepSec); UART_SendText(buf); }
-    } else if (TouchInRect(tx, ty, COL_PLUS, ROW3_Y, BTN_W, BTN_H)) {
+    } else if (TouchInRect(tx, ty, HIT_PLUS_X, HIT_ROW3_Y, HIT_W, HIT_H)) {
         cfgSweepSec++;
         if (cfgSweepSec > 10) cfgSweepSec = 10;
         needValDraw = 1;
