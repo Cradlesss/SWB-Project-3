@@ -49,3 +49,5 @@ cmake-build-*/
 # Keil / inne
 *.uvprojx
 *.uvoptx
+
+Core/Project_and_contents

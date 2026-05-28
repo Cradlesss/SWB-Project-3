@@ -1,6 +1,10 @@
 #include "scanner.h"
 #include "hcsr04.h"
 #include "servo.h"
+#include <stdio.h>
+#include <string.h>
+
+extern void UART_SendText(const char *text);
 
 extern volatile uint32_t appTickMs;
 
@@ -48,11 +52,15 @@ void Scanner_SetConfig(int la, int ra, int stMs) {
 }
 
 void Scanner_Start(void) {
+    char buf[64];
     int i;
     for (i = 0; i < SCANNER_NUM_SLOTS; i++) filtered[i] = -1;
     curSlot  = 0;
     sweepDone = 0;
     running  = 1;
+    snprintf(buf, sizeof(buf), "SCAN start: L=%d R=%d settle=%lums\r\n",
+             leftAngle, rightAngle, settleMs);
+    UART_SendText(buf);
     BeginSlot(0);
 }
 
@@ -88,8 +96,24 @@ void Scanner_Task(void) {
                     filtered[curSlot] = (filtered[curSlot] * 3 + raw) / 4;
             }
 
+            {
+                char buf[48];
+                snprintf(buf, sizeof(buf), "slot%02d ang=%3d dist=%4d\r\n",
+                         curSlot, SlotAngle(curSlot),
+                         (int)filtered[curSlot]);
+                UART_SendText(buf);
+            }
+
             curSlot++;
             if (curSlot >= SCANNER_NUM_SLOTS) {
+                int near = Scanner_GetNearestSlot();
+                char buf[64];
+                if (near >= 0)
+                    snprintf(buf, sizeof(buf), "SWEEP done. Nearest slot=%d (%dmm)\r\n",
+                             near, (int)filtered[near]);
+                else
+                    snprintf(buf, sizeof(buf), "SWEEP done. No valid target.\r\n");
+                UART_SendText(buf);
                 curSlot   = 0;
                 sweepDone = 1;
             }

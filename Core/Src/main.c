@@ -12,9 +12,10 @@
   *   SPI1  – TFT ILI9341 + Touch XPT2046 (PA5/PA6/PA7, DMA Ch3 TX)
   *   USART2 – Debug UART (PA2/PA3, DMA Ch2 TX)
   * PIN MAP:
-  *   PB0=HCSR04_TRIG  PB1=HCSR04_ECHO(EXTI1,pri1)
-  *   PB2=TFT_RST      PB4=SERVO_PWM(TIM3_CH1)
-  *   PB10=TOUCH_CS    PC4=TFT_CS   PC5=TFT_DC
+  *   PA1=TFT_CS       PA8=TOUCH_CS
+  *   PB0=TFT_DC       PB1=HCSR04_ECHO(EXTI1,pri1)
+  *   PB4=SERVO_PWM(TIM3_CH1)
+  *   PC3=HCSR04_TRIG  PC7=TFT_RST
   ******************************************************************************
   */
 /* USER CODE END Header */
@@ -157,20 +158,11 @@ int main(void)
   UART_SendText("HCSR04 ok\r\n");
 
   Servo_Init();
-  UART_SendText("Servo ok\r\n");
+  UART_SendText("Servo ok (center 90 deg)\r\n");
 
   UART_SendText("TFT init...\r\n");
   TFT_Init();
   UART_SendText("TFT ok\r\n");
-
-  /* ── Visual SPI test ──────────────────────────────────────────────────
-   * If the screen stays white: SPI data is NOT reaching the display.
-   * If you see three colour bands: init works, move on.
-   * ------------------------------------------------------------------ */
-  TFT_FillRect(  0, 0, 107, 240, TFT_RED);
-  TFT_FillRect(107, 0, 106, 240, TFT_GREEN);
-  TFT_FillRect(213, 0, 107, 240, TFT_BLUE);
-  UART_SendText("Colour bars drawn\r\n");
 
   Touch_Init();
   UART_SendText("Touch ok\r\n");
@@ -179,7 +171,7 @@ int main(void)
   UART_SendText("Scanner ok\r\n");
 
   GUI_Init();
-  UART_SendText("GUI ok\r\n");
+  UART_SendText("GUI ok - showing config screen\r\n");
 
   UART_SendText("Sonar ready\r\n");
   /* USER CODE END 2 */

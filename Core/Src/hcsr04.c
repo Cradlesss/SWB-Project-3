@@ -1,6 +1,9 @@
 #include "hcsr04.h"
 #include "main.h"
 #include "tim.h"
+#include <stdio.h>
+
+extern void UART_SendText(const char *text);
 
 #define TIMEOUT_MS 30u
 
@@ -62,6 +65,7 @@ void HCSR04_Task(void) {
     if ((state == WAIT_ECHO || state == MEASURING) &&
         (appTickMs - toutStart >= TIMEOUT_MS)) {
         HAL_GPIO_WritePin(HCSR04_TRIG_GPIO_Port, HCSR04_TRIG_Pin, GPIO_PIN_RESET);
+        UART_SendText("HCSR04: timeout (no echo)\r\n");
         distMm = -1;
         ready  = 1;
         state  = IDLE;

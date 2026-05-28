@@ -2,9 +2,10 @@
 #include "tft_ili9341.h"
 #include "touch_xpt2046.h"
 #include "scanner.h"
-#include "usart.h"
 #include <stdio.h>
 #include <string.h>
+
+extern void UART_SendText(const char *text);
 
 extern volatile uint32_t appTickMs;
 
@@ -119,41 +120,58 @@ static void ConfigScreen_Task(void) {
     if (appTickMs - lastTouchMs < DEBOUNCE_MS) return;
     lastTouchMs = appTickMs;
 
+    {
+        char buf[48];
+        snprintf(buf, sizeof(buf), "TOUCH x=%d y=%d\r\n", tx, ty);
+        UART_SendText(buf);
+    }
+
     /* L ANGLE */
     if (TouchInRect(tx, ty, COL_MINUS, ROW1_Y, BTN_W, BTN_H)) {
         cfgLeftAngle -= 5;
         if (cfgLeftAngle < 0) cfgLeftAngle = 0;
         needValDraw = 1;
+        { char buf[32]; snprintf(buf, sizeof(buf), "L_ANG- -> %d\r\n", cfgLeftAngle); UART_SendText(buf); }
     } else if (TouchInRect(tx, ty, COL_PLUS, ROW1_Y, BTN_W, BTN_H)) {
         cfgLeftAngle += 5;
         if (cfgLeftAngle > cfgRightAngle - 10) cfgLeftAngle = cfgRightAngle - 10;
         needValDraw = 1;
+        { char buf[32]; snprintf(buf, sizeof(buf), "L_ANG+ -> %d\r\n", cfgLeftAngle); UART_SendText(buf); }
     }
     /* R ANGLE */
     else if (TouchInRect(tx, ty, COL_MINUS, ROW2_Y, BTN_W, BTN_H)) {
         cfgRightAngle -= 5;
         if (cfgRightAngle < cfgLeftAngle + 10) cfgRightAngle = cfgLeftAngle + 10;
         needValDraw = 1;
+        { char buf[32]; snprintf(buf, sizeof(buf), "R_ANG- -> %d\r\n", cfgRightAngle); UART_SendText(buf); }
     } else if (TouchInRect(tx, ty, COL_PLUS, ROW2_Y, BTN_W, BTN_H)) {
         cfgRightAngle += 5;
         if (cfgRightAngle > 180) cfgRightAngle = 180;
         needValDraw = 1;
+        { char buf[32]; snprintf(buf, sizeof(buf), "R_ANG+ -> %d\r\n", cfgRightAngle); UART_SendText(buf); }
     }
     /* SWEEP */
     else if (TouchInRect(tx, ty, COL_MINUS, ROW3_Y, BTN_W, BTN_H)) {
         cfgSweepSec--;
         if (cfgSweepSec < 1) cfgSweepSec = 1;
         needValDraw = 1;
+        { char buf[32]; snprintf(buf, sizeof(buf), "SWEEP- -> %ds\r\n", cfgSweepSec); UART_SendText(buf); }
     } else if (TouchInRect(tx, ty, COL_PLUS, ROW3_Y, BTN_W, BTN_H)) {
         cfgSweepSec++;
         if (cfgSweepSec > 10) cfgSweepSec = 10;
         needValDraw = 1;
+        { char buf[32]; snprintf(buf, sizeof(buf), "SWEEP+ -> %ds\r\n", cfgSweepSec); UART_SendText(buf); }
     }
     /* START */
     else if (TouchInRect(tx, ty, START_X, START_Y, START_W, START_H)) {
+        { char buf[64]; snprintf(buf, sizeof(buf), "START pressed: L=%d R=%d T=%ds\r\n",
+              cfgLeftAngle, cfgRightAngle, cfgSweepSec); UART_SendText(buf); }
         Scanner_SetConfig(cfgLeftAngle, cfgRightAngle, cfgSweepSec * 1000);
         GUI_SetScreen(GUI_RUN);
         Scanner_Start();
+    }
+    else {
+        UART_SendText("TOUCH: no button hit\r\n");
     }
 }
 
@@ -224,6 +242,7 @@ static void RunScreen_Task(void) {
     lastTouchMs = appTickMs;
 
     if (TouchInRect(tx, ty, BACK_X, BACK_Y, BACK_W, BACK_H)) {
+        UART_SendText("BACK pressed -> config screen\r\n");
         Scanner_Stop();
         GUI_SetScreen(GUI_CONFIG);
     }
