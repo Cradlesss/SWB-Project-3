@@ -1,0 +1,48 @@
+# Build folders
+Debug/
+Release/
+build/
+
+# Object files
+*.o
+*.d
+*.su
+*.map
+*.elf
+*.bin
+*.hex
+
+# CubeIDE metadata
+.metadata/
+
+# Eclipse / CubeIDE temporary files
+.settings/
+*.launch
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Backup files
+*~
+*.bak
+
+# Toolchain / linker outputs
+*.list
+*.lss
+
+# STM32CubeMX generated backups
+*.tmp
+*.swp
+
+# VSCode
+.vscode/
+
+# CLion / JetBrains
+.idea/
+cmake-build-*/
+
+# Keil / inne
+*.uvprojx
+*.uvoptx
