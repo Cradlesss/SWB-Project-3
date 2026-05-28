@@ -144,19 +144,25 @@ static void SetWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
 /* ── Public API ──────────────────────────────────────────────────────────── */
 
 void TFT_Init(void) {
+    /* Deselect all SPI devices */
     TFT_CS_HIGH();
+    HAL_GPIO_WritePin(TOUCH_CS_GPIO_Port, TOUCH_CS_Pin, GPIO_PIN_SET);
+
+    /* DC idle state */
     TFT_DC_DATA();
 
-    /* Hardware reset */
-    TFT_RST_LOW(); HAL_Delay(10);
+    /* Bring RST high first, then pulse it low */
+    TFT_RST_HIGH();
+    TFT_RST_LOW();  HAL_Delay(20);
     TFT_RST_HIGH(); HAL_Delay(120);
 
     /* Software reset */
-    SendCmdData(0x01, NULL, 0); HAL_Delay(5);
-    /* Sleep out */
-    SendCmdData(0x11, NULL, 0); HAL_Delay(120);
+    SendCmdData(0x01, NULL, 0); HAL_Delay(120);
 
-    /* Power / timing */
+    /* Display OFF during init */
+    SendCmdData(0x28, NULL, 0);
+
+    /* Power / timing registers */
     { static const uint8_t d[] = {0x00,0xC1,0x30};           SendCmdData(0xCF,d,3); }
     { static const uint8_t d[] = {0x64,0x03,0x12,0x81};      SendCmdData(0xED,d,4); }
     { static const uint8_t d[] = {0x85,0x00,0x78};           SendCmdData(0xE8,d,3); }
@@ -164,20 +170,21 @@ void TFT_Init(void) {
     { static const uint8_t d[] = {0x20};                     SendCmdData(0xF7,d,1); }
     { static const uint8_t d[] = {0x00,0x00};                SendCmdData(0xEA,d,2); }
 
-    /* Display control */
-    { static const uint8_t d[] = {0x23};       SendCmdData(0xC0,d,1); } /* VRH */
-    { static const uint8_t d[] = {0x10};       SendCmdData(0xC1,d,1); } /* SAP */
-    { static const uint8_t d[] = {0x3E,0x28};  SendCmdData(0xC5,d,2); } /* VCOM */
-    { static const uint8_t d[] = {0x86};       SendCmdData(0xC7,d,1); } /* VCOM2 */
+    /* Power control */
+    { static const uint8_t d[] = {0x23};      SendCmdData(0xC0,d,1); }
+    { static const uint8_t d[] = {0x10};      SendCmdData(0xC1,d,1); }
+    { static const uint8_t d[] = {0x3E,0x28}; SendCmdData(0xC5,d,2); }
+    { static const uint8_t d[] = {0x86};      SendCmdData(0xC7,d,1); }
 
-    /* MADCTL – landscape, BGR */
-    { static const uint8_t d[] = {0x68}; SendCmdData(0x36,d,1); }
     /* Pixel format – RGB565 */
     { static const uint8_t d[] = {0x55}; SendCmdData(0x3A,d,1); }
-    /* Frame rate ~79 Hz */
+
+    /* Frame rate */
     { static const uint8_t d[] = {0x00,0x18}; SendCmdData(0xB1,d,2); }
+
     /* Display function */
     { static const uint8_t d[] = {0x08,0x82,0x27}; SendCmdData(0xB6,d,3); }
+
     /* 3-gamma off */
     { static const uint8_t d[] = {0x00}; SendCmdData(0xF2,d,1); }
     { static const uint8_t d[] = {0x01}; SendCmdData(0x26,d,1); }
@@ -190,8 +197,14 @@ void TFT_Init(void) {
                                    0x48,0x08,0x0F,0x0C,0x31,0x36,0x0F};
       SendCmdData(0xE1,d,15); }
 
+    /* MADCTL – landscape 320x240, BGR (matches lecturer's rotation 0) */
+    { static const uint8_t d[] = {0x48}; SendCmdData(0x36,d,1); }
+
+    /* Sleep out – AFTER all registers, as per working reference */
+    SendCmdData(0x11, NULL, 0); HAL_Delay(120);
+
     /* Display on */
-    SendCmdData(0x29, NULL, 0);
+    SendCmdData(0x29, NULL, 0); HAL_Delay(20);
 
     TFT_FillScreen(TFT_BLACK);
 }

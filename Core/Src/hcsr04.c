@@ -6,12 +6,12 @@
 
 typedef enum { IDLE, TRIG_HIGH, WAIT_ECHO, MEASURING } HcState;
 
-static HcState  state      = IDLE;
-static uint32_t trigStart  = 0;
-static uint32_t echoStart  = 0;
-static uint32_t toutStart  = 0;
-static int32_t  distMm     = -1;
-static uint8_t  ready      = 0;
+static HcState  state = IDLE;
+static uint32_t trigStart = 0;
+static uint32_t echoStart = 0;
+static uint32_t toutStart = 0;
+static int32_t distMm = -1;
+static uint8_t ready = 0;
 
 extern volatile uint32_t appTickMs;
 

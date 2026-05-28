@@ -51,19 +51,16 @@ void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(TFT_CS_GPIO_Port, TFT_CS_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOC, HCSR04_TRIG_Pin|TFT_RST_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, TFT_CS_Pin|TOUCH_CS_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(TFT_DC_GPIO_Port, TFT_DC_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, HCSR04_TRIG_Pin|TFT_RST_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(TOUCH_CS_GPIO_Port, TOUCH_CS_Pin, GPIO_PIN_SET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, STEP_STEP_Pin|STEP_DIR_Pin|STEP_EN_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, STEP_DIR_Pin|STEP_EN_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
@@ -71,32 +68,32 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : TFT_CS_Pin TFT_DC_Pin */
-  GPIO_InitStruct.Pin = TFT_CS_Pin|TFT_DC_Pin;
+  /*Configure GPIO pins : HCSR04_TRIG_Pin TFT_RST_Pin */
+  GPIO_InitStruct.Pin = HCSR04_TRIG_Pin|TFT_RST_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : HCSR04_TRIG_Pin TFT_RST_Pin TOUCH_CS_Pin */
-  GPIO_InitStruct.Pin = HCSR04_TRIG_Pin|TFT_RST_Pin|TOUCH_CS_Pin;
+  /*Configure GPIO pins : TFT_CS_Pin TOUCH_CS_Pin STEP_DIR_Pin STEP_EN_Pin */
+  GPIO_InitStruct.Pin = TFT_CS_Pin|TOUCH_CS_Pin|STEP_DIR_Pin|STEP_EN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : TFT_DC_Pin */
+  GPIO_InitStruct.Pin = TFT_DC_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(TFT_DC_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : HCSR04_ECHO_Pin */
   GPIO_InitStruct.Pin = HCSR04_ECHO_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(HCSR04_ECHO_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : STEP_STEP_Pin STEP_DIR_Pin STEP_EN_Pin */
-  GPIO_InitStruct.Pin = STEP_STEP_Pin|STEP_DIR_Pin|STEP_EN_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI1_IRQn, 1, 0);
