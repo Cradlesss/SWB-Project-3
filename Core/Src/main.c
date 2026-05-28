@@ -125,13 +125,26 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim7);
+  UART_SendText("TIM7 ok\r\n");
 
   HCSR04_Init();
+  UART_SendText("HCSR04 ok\r\n");
+
   Servo_Init();
+  UART_SendText("Servo ok\r\n");
+
+  UART_SendText("TFT init...\r\n");
   TFT_Init();
+  UART_SendText("TFT ok\r\n");
+
   Touch_Init();
+  UART_SendText("Touch ok\r\n");
+
   Scanner_Init();
+  UART_SendText("Scanner ok\r\n");
+
   GUI_Init();
+  UART_SendText("GUI ok\r\n");
 
   UART_SendText("Sonar ready\r\n");
   /* USER CODE END 2 */
