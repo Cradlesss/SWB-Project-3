@@ -137,6 +137,15 @@ int main(void)
   TFT_Init();
   UART_SendText("TFT ok\r\n");
 
+  /* ── Visual SPI test ──────────────────────────────────────────────────
+   * If the screen stays white: SPI data is NOT reaching the display.
+   * If you see three colour bands: init works, move on.
+   * ------------------------------------------------------------------ */
+  TFT_FillRect(  0, 0, 107, 240, TFT_RED);
+  TFT_FillRect(107, 0, 106, 240, TFT_GREEN);
+  TFT_FillRect(213, 0, 107, 240, TFT_BLUE);
+  UART_SendText("Colour bars drawn\r\n");
+
   Touch_Init();
   UART_SendText("Touch ok\r\n");
 
