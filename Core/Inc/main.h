@@ -68,8 +68,6 @@ void Error_Handler(void);
 #define RCC_OSC_IN_GPIO_Port GPIOF
 #define RCC_OSC_OUT_Pin GPIO_PIN_1
 #define RCC_OSC_OUT_GPIO_Port GPIOF
-#define HCSR04_TRIG_Pin GPIO_PIN_3
-#define HCSR04_TRIG_GPIO_Port GPIOC
 #define TFT_CS_Pin GPIO_PIN_1
 #define TFT_CS_GPIO_Port GPIOA
 #define SPI1_SCK_Pin GPIO_PIN_5
@@ -80,9 +78,6 @@ void Error_Handler(void);
 #define SPI1_MOSI_GPIO_Port GPIOA
 #define TFT_DC_Pin GPIO_PIN_0
 #define TFT_DC_GPIO_Port GPIOB
-#define HCSR04_ECHO_Pin GPIO_PIN_1
-#define HCSR04_ECHO_GPIO_Port GPIOB
-#define HCSR04_ECHO_EXTI_IRQn EXTI1_IRQn
 #define TFT_RST_Pin GPIO_PIN_7
 #define TFT_RST_GPIO_Port GPIOC
 #define TOUCH_CS_Pin GPIO_PIN_8
@@ -97,6 +92,11 @@ void Error_Handler(void);
 #define T_SWCLK_GPIO_Port GPIOA
 #define T_SWO_Pin GPIO_PIN_3
 #define T_SWO_GPIO_Port GPIOB
+#define HCSR04_TRIG_Pin GPIO_PIN_8
+#define HCSR04_TRIG_GPIO_Port GPIOB
+#define HCSR04_ECHO_Pin GPIO_PIN_9
+#define HCSR04_ECHO_GPIO_Port GPIOB
+#define HCSR04_ECHO_EXTI_IRQn EXTI9_5_IRQn
 
 /* USER CODE BEGIN Private defines */
 
