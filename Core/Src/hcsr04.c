@@ -1,55 +1,66 @@
 #include "hcsr04.h"
 #include "main.h"
 #include "tim.h"
-#include <stdio.h>
 
 extern void UART_SendText(const char *text);
+extern volatile uint32_t appTickMs;
 
 #define TIMEOUT_MS 30u
 
-typedef enum { IDLE, TRIG_HIGH, WAIT_ECHO, MEASURING } HcState;
+typedef enum { IDLE, WAIT_ECHO, MEASURING } HcState;
 
-static HcState  state = IDLE;
-static uint32_t trigStart = 0;
-static uint32_t echoStart = 0;
-static uint32_t toutStart = 0;
-static int32_t distMm = -1;
-static uint8_t ready = 0;
+static HcState  state       = IDLE;
+static uint32_t riseCapture = 0;
+static uint32_t toutStart   = 0;
+static int32_t  distMm      = -1;
+static uint8_t  ready       = 0;
 
-extern volatile uint32_t appTickMs;
-
-static uint32_t GetUs(void) { return htim2.Instance->CNT; }
-
-static uint32_t ElapsedUs(uint32_t from) {
-    uint32_t now = GetUs();
-    /* TIM2 period = 19999, so counter wraps at 20000 */
-    return (now >= from) ? (now - from) : (20000u - from + now);
+static void TrigDelayUs(uint32_t us) {
+    uint32_t start = htim2.Instance->CNT;
+    while (1) {
+        uint32_t now = htim2.Instance->CNT;
+        uint32_t elapsed = (now >= start) ? (now - start) : (20000u - start + now);
+        if (elapsed >= us) break;
+    }
 }
 
 void HCSR04_Init(void) {
-    HAL_TIM_Base_Start(&htim2);
-    state = IDLE;
-    ready = 0;
+    HAL_GPIO_WritePin(SONAR_TRIG_GPIO_Port, SONAR_TRIG_Pin, GPIO_PIN_RESET);
+    HAL_TIM_IC_Start_IT(&htim3, TIM_CHANNEL_1);
+    state  = IDLE;
+    ready  = 0;
+    distMm = -1;
 }
 
 void HCSR04_Trigger(void) {
     if (state != IDLE) return;
-    HAL_GPIO_WritePin(HCSR04_TRIG_GPIO_Port, HCSR04_TRIG_Pin, GPIO_PIN_SET);
-    trigStart = GetUs();
+    __HAL_TIM_SET_COUNTER(&htim3, 0);
+    HAL_GPIO_WritePin(SONAR_TRIG_GPIO_Port, SONAR_TRIG_Pin, GPIO_PIN_RESET);
+    TrigDelayUs(2);
+    HAL_GPIO_WritePin(SONAR_TRIG_GPIO_Port, SONAR_TRIG_Pin, GPIO_PIN_SET);
+    TrigDelayUs(10);
+    HAL_GPIO_WritePin(SONAR_TRIG_GPIO_Port, SONAR_TRIG_Pin, GPIO_PIN_RESET);
     toutStart = appTickMs;
-    state     = TRIG_HIGH;
+    state = WAIT_ECHO;
 }
 
-void HCSR04_EchoIRQ(void) {
-    if (HAL_GPIO_ReadPin(HCSR04_ECHO_GPIO_Port, HCSR04_ECHO_Pin) == GPIO_PIN_SET) {
+void HCSR04_IC_Callback(TIM_HandleTypeDef *htim) {
+    if (htim->Instance != TIM3) return;
+    if (htim->Channel != HAL_TIM_ACTIVE_CHANNEL_1) return;
+
+    uint32_t captured = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1);
+
+    if (HAL_GPIO_ReadPin(SONAR_ECHO_GPIO_Port, SONAR_ECHO_Pin) == GPIO_PIN_SET) {
         if (state == WAIT_ECHO) {
-            echoStart = GetUs();
-            state     = MEASURING;
+            riseCapture = captured;
+            state = MEASURING;
         }
     } else {
         if (state == MEASURING) {
-            uint32_t dur = ElapsedUs(echoStart);
-            int32_t  d   = (int32_t)(dur * 17u / 100u); /* us * 0.17 mm/us */
+            uint32_t width = (captured >= riseCapture) ?
+                             (captured - riseCapture) :
+                             (65536u - riseCapture + captured);
+            int32_t d = (int32_t)(width * 17u / 100u);
             distMm = (d > 20 && d < 4000) ? d : -1;
             ready  = 1;
             state  = IDLE;
@@ -58,14 +69,9 @@ void HCSR04_EchoIRQ(void) {
 }
 
 void HCSR04_Task(void) {
-    if (state == TRIG_HIGH && ElapsedUs(trigStart) >= 10u) {
-        HAL_GPIO_WritePin(HCSR04_TRIG_GPIO_Port, HCSR04_TRIG_Pin, GPIO_PIN_RESET);
-        state = WAIT_ECHO;
-    }
-
     if ((state == WAIT_ECHO || state == MEASURING) &&
         (appTickMs - toutStart >= TIMEOUT_MS)) {
-        HAL_GPIO_WritePin(HCSR04_TRIG_GPIO_Port, HCSR04_TRIG_Pin, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(SONAR_TRIG_GPIO_Port, SONAR_TRIG_Pin, GPIO_PIN_RESET);
         UART_SendText("HCSR04: timeout (no echo)\r\n");
         distMm = -1;
         ready  = 1;

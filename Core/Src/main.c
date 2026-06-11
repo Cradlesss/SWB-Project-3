@@ -66,8 +66,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     if (htim->Instance == TIM7) appTickMs++;
 }
 
+void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) {
+    HCSR04_IC_Callback(htim);
+}
+
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-    if (GPIO_Pin == HCSR04_ECHO_Pin) HCSR04_EchoIRQ();
+    (void)GPIO_Pin;
 }
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {

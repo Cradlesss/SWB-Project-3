@@ -78,25 +78,28 @@ void Error_Handler(void);
 #define SPI1_MOSI_GPIO_Port GPIOA
 #define TFT_DC_Pin GPIO_PIN_0
 #define TFT_DC_GPIO_Port GPIOB
+#define STEP_IN1_Pin GPIO_PIN_11
+#define STEP_IN1_GPIO_Port GPIOB
+#define STEP_IN2_Pin GPIO_PIN_12
+#define STEP_IN2_GPIO_Port GPIOB
+#define STEP_IN3_Pin GPIO_PIN_13
+#define STEP_IN3_GPIO_Port GPIOB
+#define STEP_IN4_Pin GPIO_PIN_14
+#define STEP_IN4_GPIO_Port GPIOB
+#define SONAR_ECHO_Pin GPIO_PIN_6
+#define SONAR_ECHO_GPIO_Port GPIOC
 #define TFT_RST_Pin GPIO_PIN_7
 #define TFT_RST_GPIO_Port GPIOC
+#define SONAR_TRIG_Pin GPIO_PIN_8
+#define SONAR_TRIG_GPIO_Port GPIOC
 #define TOUCH_CS_Pin GPIO_PIN_8
 #define TOUCH_CS_GPIO_Port GPIOA
-#define STEP_DIR_Pin GPIO_PIN_9
-#define STEP_DIR_GPIO_Port GPIOA
-#define STEP_EN_Pin GPIO_PIN_10
-#define STEP_EN_GPIO_Port GPIOA
 #define T_SWDIO_Pin GPIO_PIN_13
 #define T_SWDIO_GPIO_Port GPIOA
 #define T_SWCLK_Pin GPIO_PIN_14
 #define T_SWCLK_GPIO_Port GPIOA
 #define T_SWO_Pin GPIO_PIN_3
 #define T_SWO_GPIO_Port GPIOB
-#define HCSR04_TRIG_Pin GPIO_PIN_8
-#define HCSR04_TRIG_GPIO_Port GPIOB
-#define HCSR04_ECHO_Pin GPIO_PIN_9
-#define HCSR04_ECHO_GPIO_Port GPIOB
-#define HCSR04_ECHO_EXTI_IRQn EXTI9_5_IRQn
 
 /* USER CODE BEGIN Private defines */
 
