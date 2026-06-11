@@ -1,23 +1,4 @@
 /* USER CODE BEGIN Header */
-/**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Scanning Sonar – NUCLEO-G491RE
-  ******************************************************************************
-  * HARDWARE:  STM32G491RETx, 170 MHz
-  * PERIPHERALS:
-  *   TIM7  – 1 ms app tick (Prescaler=16999, Period=9, IRQ)
-  *   TIM2  – us counter for HC-SR04 (Prescaler=169, Period=65535)
-  *   TIM3  – Servo PWM CH1 PB4 (Prescaler=169, Period=19999, 50 Hz)
-  *   SPI1  – TFT ILI9341 + Touch XPT2046 (PA5/PA6/PA7, DMA Ch3 TX)
-  *   USART2 – Debug UART (PA2/PA3, DMA Ch2 TX)
-  * PIN MAP:
-  *   PA1=TFT_CS       PA8=TOUCH_CS
-  *   PB0=TFT_DC       PB1=HCSR04_ECHO(EXTI1,pri1)
-  *   PB4=SERVO_PWM(TIM3_CH1)
-  *   PC3=HCSR04_TRIG  PC7=TFT_RST
-  ******************************************************************************
-  */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -60,12 +41,12 @@
 /* USER CODE BEGIN PV */
 volatile uint32_t appTickMs = 0;
 
-static int  txBusy  = 0;
+static int txBusy = 0;
 static char txCurBuf[TX_MSG_MAX_LEN];
 static char txQueue[TX_QUEUE_SIZE][TX_MSG_MAX_LEN];
-static int  txQHead  = 0;
-static int  txQTail  = 0;
-static int  txQCount = 0;
+static int txQHead = 0;
+static int txQTail = 0;
+static int txQCount = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -73,8 +54,8 @@ void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 void SystemClock_Config(void);
 uint32_t APP_GetTick(void);
-void     UART_SendText(const char *text);
-void     UART_StartNextTx(void);
+void UART_SendText(const char *text);
+void UART_StartNextTx(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -154,10 +135,10 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim7);
   UART_SendText("TIM7 ok\r\n");
 
-  Servo_Init();   /* starts TIM2 counter + CH3 PWM on PB10 */
+  Servo_Init();
   UART_SendText("Servo ok (center 90 deg)\r\n");
 
-  HCSR04_Init();  /* enables TIM2 base (already running, safe) */
+  HCSR04_Init();
   UART_SendText("HCSR04 ok\r\n");
 
   UART_SendText("TFT init...\r\n");
