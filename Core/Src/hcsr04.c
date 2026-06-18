@@ -9,11 +9,11 @@ extern volatile uint32_t appTickMs;
 
 typedef enum { IDLE, WAIT_ECHO, MEASURING } HcState;
 
-static HcState  state       = IDLE;
+static HcState state = IDLE;
 static uint32_t riseCapture = 0;
-static uint32_t toutStart   = 0;
-static int32_t  distMm      = -1;
-static uint8_t  ready       = 0;
+static uint32_t toutStart = 0;
+static int32_t distMm = -1;
+static uint8_t ready = 0;
 
 static void TrigDelayUs(uint32_t us) {
     uint32_t start = htim2.Instance->CNT;
@@ -27,8 +27,8 @@ static void TrigDelayUs(uint32_t us) {
 void HCSR04_Init(void) {
     HAL_GPIO_WritePin(SONAR_TRIG_GPIO_Port, SONAR_TRIG_Pin, GPIO_PIN_RESET);
     HAL_TIM_IC_Start_IT(&htim3, TIM_CHANNEL_1);
-    state  = IDLE;
-    ready  = 0;
+    state = IDLE;
+    ready = 0;
     distMm = -1;
 }
 
@@ -62,8 +62,8 @@ void HCSR04_IC_Callback(TIM_HandleTypeDef *htim) {
                              (65536u - riseCapture + captured);
             int32_t d = (int32_t)(width * 17u / 100u);
             distMm = (d > 20 && d < 4000) ? d : -1;
-            ready  = 1;
-            state  = IDLE;
+            ready = 1;
+            state = IDLE;
         }
     }
 }
@@ -74,11 +74,11 @@ void HCSR04_Task(void) {
         HAL_GPIO_WritePin(SONAR_TRIG_GPIO_Port, SONAR_TRIG_Pin, GPIO_PIN_RESET);
         UART_SendText("HCSR04: timeout (no echo)\r\n");
         distMm = -1;
-        ready  = 1;
-        state  = IDLE;
+        ready = 1;
+        state = IDLE;
     }
 }
 
 int32_t HCSR04_GetDistance_mm(void) { return distMm; }
-uint8_t HCSR04_IsReady(void)        { return ready;  }
-void    HCSR04_ClearReady(void)     { ready = 0;     }
+uint8_t HCSR04_IsReady(void) { return ready; }
+void HCSR04_ClearReady(void) { ready = 0; }

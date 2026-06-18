@@ -52,16 +52,12 @@ static int txQCount = 0;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
-void SystemClock_Config(void);
-uint32_t APP_GetTick(void);
 void UART_SendText(const char *text);
 void UART_StartNextTx(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint32_t APP_GetTick(void) { return appTickMs; }
-
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     if (htim->Instance == TIM7) appTickMs++;
 }
@@ -165,7 +161,6 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    HCSR04_Task();
     Scanner_Task();
     GUI_Task();
     /* USER CODE END WHILE */

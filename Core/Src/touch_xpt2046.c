@@ -3,7 +3,6 @@
 #include "main.h"
 #include "spi.h"
 
-/* XPT2046 channel commands (12-bit differential, power-down between) */
 #define CMD_X   0xD0u
 #define CMD_Y   0x90u
 #define CMD_Z1  0xB0u
@@ -35,7 +34,6 @@ uint8_t Touch_GetXY(uint16_t *sx, uint16_t *sy) {
     rawX = ReadChannel(CMD_X);
     rawY = ReadChannel(CMD_Y);
 
-    /* Average two reads for stability */
     rawX = (uint16_t)((rawX + ReadChannel(CMD_X)) / 2u);
     rawY = (uint16_t)((rawY + ReadChannel(CMD_Y)) / 2u);
 

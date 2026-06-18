@@ -6,60 +6,53 @@
 #include <string.h>
 
 extern void UART_SendText(const char *text);
-
 extern volatile uint32_t appTickMs;
 
-/* ── Layout constants ───────────────────────────────────────────────────── */
-#define BAR_AREA_H  200
-#define STATUS_Y    200
-#define STATUS_H     40
+#define BAR_AREA_H 200
+#define STATUS_Y 200
+#define STATUS_H 40
 
-/* Config screen button geometry */
-#define BTN_W    36
-#define BTN_H    26
-#define VAL_W    48   /* value field width in pixels */
-#define ROW1_Y   48
-#define ROW2_Y   93
-#define ROW3_Y  138
-#define COL_LBL   8
+#define BTN_W 36
+#define BTN_H 26
+#define VAL_W 48
+#define ROW1_Y 48
+#define ROW2_Y 93
+#define ROW3_Y 138
+#define COL_LBL 8
 #define COL_MINUS 116
-#define COL_VAL  158
+#define COL_VAL 158
 #define COL_PLUS 212
 #define COL_UNIT 254
 
-/* Touch hit areas – larger than visual buttons to compensate for calibration */
-#define HIT_W   60   /* wider than BTN_W */
-#define HIT_H   38   /* taller than BTN_H */
-#define HIT_MINUS_X  (COL_MINUS - 12)
-#define HIT_PLUS_X   (COL_PLUS  - 12)
-#define HIT_ROW1_Y   (ROW1_Y - 6)
-#define HIT_ROW2_Y   (ROW2_Y - 6)
-#define HIT_ROW3_Y   (ROW3_Y - 6)
+#define HIT_W 60
+#define HIT_H 38
+#define HIT_MINUS_X (COL_MINUS - 12)
+#define HIT_PLUS_X (COL_PLUS - 12)
+#define HIT_ROW1_Y (ROW1_Y - 6)
+#define HIT_ROW2_Y (ROW2_Y - 6)
+#define HIT_ROW3_Y (ROW3_Y - 6)
 
-/* START button */
-#define START_X   80
-#define START_Y  185
-#define START_W  160
-#define START_H   40
+#define START_X 80
+#define START_Y 185
+#define START_W 160
+#define START_H 40
 
-/* Run screen BACK button */
-#define BACK_X    0
-#define BACK_Y  STATUS_Y
-#define BACK_W   70
-#define BACK_H  STATUS_H
+#define BACK_X 0
+#define BACK_Y STATUS_Y
+#define BACK_W 70
+#define BACK_H STATUS_H
 
-/* ── State ──────────────────────────────────────────────────────────────── */
-static GuiScreen  screen       = GUI_CONFIG;
-static int        needFullDraw = 1;
-static int        needValDraw  = 0;
-static uint32_t   lastTouchMs  = 0;
 #define DEBOUNCE_MS 300u
 
-static int cfgLeftAngle  = 30;
-static int cfgRightAngle = 150;
-static int cfgSweepSec   = 4;
+static GuiScreen screen = GUI_CONFIG;
+static int needFullDraw = 1;
+static int needValDraw = 0;
+static uint32_t lastTouchMs = 0;
 
-/* ── Helpers ─────────────────────────────────────────────────────────────── */
+static int cfgLeftAngle = 30;
+static int cfgRightAngle = 150;
+static int cfgSweepSec = 4;
+
 static void DrawButton(int16_t x, int16_t y, int16_t w, int16_t h,
                        const char *lbl, uint16_t bg, uint16_t fg, uint8_t sz) {
     TFT_FillRect(x, y, w, h, bg);
@@ -75,11 +68,9 @@ static uint8_t TouchInRect(uint16_t tx, uint16_t ty,
             ty >= (uint16_t)ry && ty < (uint16_t)(ry + rh)) ? 1u : 0u;
 }
 
-/* ── Config screen ───────────────────────────────────────────────────────── */
 static void DrawConfigValues(void) {
     char buf[8];
 
-    /* Erase old value areas then redraw */
     TFT_FillRect(COL_VAL, ROW1_Y - 2, VAL_W, BTN_H + 4, TFT_BLACK);
     TFT_FillRect(COL_VAL, ROW2_Y - 2, VAL_W, BTN_H + 4, TFT_BLACK);
     TFT_FillRect(COL_VAL, ROW3_Y - 2, VAL_W, BTN_H + 4, TFT_BLACK);
@@ -104,11 +95,11 @@ static void DrawConfigScreen(void) {
     TFT_DrawString(COL_LBL, ROW3_Y + 4, "SWEEP:", TFT_WHITE, TFT_BLACK, 2);
 
     DrawButton(COL_MINUS, ROW1_Y, BTN_W, BTN_H, "-", TFT_DKGRAY, TFT_WHITE, 2);
-    DrawButton(COL_PLUS,  ROW1_Y, BTN_W, BTN_H, "+", TFT_DKGRAY, TFT_WHITE, 2);
+    DrawButton(COL_PLUS, ROW1_Y, BTN_W, BTN_H, "+", TFT_DKGRAY, TFT_WHITE, 2);
     DrawButton(COL_MINUS, ROW2_Y, BTN_W, BTN_H, "-", TFT_DKGRAY, TFT_WHITE, 2);
-    DrawButton(COL_PLUS,  ROW2_Y, BTN_W, BTN_H, "+", TFT_DKGRAY, TFT_WHITE, 2);
+    DrawButton(COL_PLUS, ROW2_Y, BTN_W, BTN_H, "+", TFT_DKGRAY, TFT_WHITE, 2);
     DrawButton(COL_MINUS, ROW3_Y, BTN_W, BTN_H, "-", TFT_DKGRAY, TFT_WHITE, 2);
-    DrawButton(COL_PLUS,  ROW3_Y, BTN_W, BTN_H, "+", TFT_DKGRAY, TFT_WHITE, 2);
+    DrawButton(COL_PLUS, ROW3_Y, BTN_W, BTN_H, "+", TFT_DKGRAY, TFT_WHITE, 2);
 
     TFT_DrawString(COL_UNIT, ROW1_Y + 4, "deg", TFT_GRAY, TFT_BLACK, 2);
     TFT_DrawString(COL_UNIT, ROW2_Y + 4, "deg", TFT_GRAY, TFT_BLACK, 2);
@@ -123,7 +114,7 @@ static void ConfigScreen_Task(void) {
     uint16_t tx, ty;
 
     if (needFullDraw) { DrawConfigScreen(); needFullDraw = 0; return; }
-    if (needValDraw)  { DrawConfigValues(); needValDraw  = 0; }
+    if (needValDraw) { DrawConfigValues(); needValDraw = 0; }
 
     if (!Touch_GetXY(&tx, &ty)) return;
     if (appTickMs - lastTouchMs < DEBOUNCE_MS) return;
@@ -135,7 +126,6 @@ static void ConfigScreen_Task(void) {
         UART_SendText(buf);
     }
 
-    /* L ANGLE */
     if (TouchInRect(tx, ty, HIT_MINUS_X, HIT_ROW1_Y, HIT_W, HIT_H)) {
         cfgLeftAngle -= 5;
         if (cfgLeftAngle < 0) cfgLeftAngle = 0;
@@ -146,9 +136,7 @@ static void ConfigScreen_Task(void) {
         if (cfgLeftAngle > cfgRightAngle - 10) cfgLeftAngle = cfgRightAngle - 10;
         needValDraw = 1;
         { char buf[32]; snprintf(buf, sizeof(buf), "L_ANG+ -> %d\r\n", cfgLeftAngle); UART_SendText(buf); }
-    }
-    /* R ANGLE */
-    else if (TouchInRect(tx, ty, HIT_MINUS_X, HIT_ROW2_Y, HIT_W, HIT_H)) {
+    } else if (TouchInRect(tx, ty, HIT_MINUS_X, HIT_ROW2_Y, HIT_W, HIT_H)) {
         cfgRightAngle -= 5;
         if (cfgRightAngle < cfgLeftAngle + 10) cfgRightAngle = cfgLeftAngle + 10;
         needValDraw = 1;
@@ -158,9 +146,7 @@ static void ConfigScreen_Task(void) {
         if (cfgRightAngle > 180) cfgRightAngle = 180;
         needValDraw = 1;
         { char buf[32]; snprintf(buf, sizeof(buf), "R_ANG+ -> %d\r\n", cfgRightAngle); UART_SendText(buf); }
-    }
-    /* SWEEP */
-    else if (TouchInRect(tx, ty, HIT_MINUS_X, HIT_ROW3_Y, HIT_W, HIT_H)) {
+    } else if (TouchInRect(tx, ty, HIT_MINUS_X, HIT_ROW3_Y, HIT_W, HIT_H)) {
         cfgSweepSec--;
         if (cfgSweepSec < 1) cfgSweepSec = 1;
         needValDraw = 1;
@@ -170,23 +156,19 @@ static void ConfigScreen_Task(void) {
         if (cfgSweepSec > 10) cfgSweepSec = 10;
         needValDraw = 1;
         { char buf[32]; snprintf(buf, sizeof(buf), "SWEEP+ -> %ds\r\n", cfgSweepSec); UART_SendText(buf); }
-    }
-    /* START */
-    else if (TouchInRect(tx, ty, START_X, START_Y, START_W, START_H)) {
+    } else if (TouchInRect(tx, ty, START_X, START_Y, START_W, START_H)) {
         { char buf[64]; snprintf(buf, sizeof(buf), "START pressed: L=%d R=%d T=%ds\r\n",
               cfgLeftAngle, cfgRightAngle, cfgSweepSec); UART_SendText(buf); }
         Scanner_SetConfig(cfgLeftAngle, cfgRightAngle, cfgSweepSec * 1000);
         GUI_SetScreen(GUI_RUN);
         Scanner_Start();
-    }
-    else {
+    } else {
         UART_SendText("TOUCH: no button hit\r\n");
     }
 }
 
-/* ── Run screen ──────────────────────────────────────────────────────────── */
 static int16_t prevBarH[SCANNER_NUM_SLOTS];
-static int     prevNearest = -2;
+static int prevNearest = -2;
 
 static void DrawRunStatic(void) {
     int i;
@@ -200,24 +182,23 @@ static void DrawRunStatic(void) {
 }
 
 static void DrawBars(void) {
-    int     nearest = Scanner_GetNearestSlot();
-    int     i;
-    char    buf[20];
+    int nearest = Scanner_GetNearestSlot();
+    int i;
+    char buf[20];
 
     for (i = 0; i < SCANNER_NUM_SLOTS; i++) {
-        int32_t  d    = Scanner_GetSlotDist_mm(i);
-        int16_t  barH = 0;
+        int32_t d = Scanner_GetSlotDist_mm(i);
+        int16_t barH = 0;
         uint16_t col;
 
         if (d > 0) {
             barH = (int16_t)((int32_t)(4000 - d) * BAR_AREA_H / 4000);
-            if (barH < 0)        barH = 0;
+            if (barH < 0) barH = 0;
             if (barH > BAR_AREA_H) barH = BAR_AREA_H;
         }
 
-        /* Skip redraw only when both height and nearest-status are unchanged */
-        int isNearest    = (i == nearest  && d > 0);
-        int wasNearest   = (i == prevNearest);
+        int isNearest = (i == nearest && d > 0);
+        int wasNearest = (i == prevNearest);
         if (barH == prevBarH[i] && isNearest == wasNearest) continue;
         prevBarH[i] = barH;
 
@@ -230,7 +211,6 @@ static void DrawBars(void) {
         }
     }
 
-    /* Update nearest distance label */
     TFT_FillRect(140, STATUS_Y + 4, 170, STATUS_H - 8, TFT_DKGRAY);
     if (nearest >= 0) {
         int32_t nd = Scanner_GetSlotDist_mm(nearest);
@@ -263,14 +243,13 @@ static void RunScreen_Task(void) {
     }
 }
 
-/* ── Public API ──────────────────────────────────────────────────────────── */
 void GUI_Init(void) {
-    screen       = GUI_CONFIG;
+    screen = GUI_CONFIG;
     needFullDraw = 1;
 }
 
 void GUI_SetScreen(GuiScreen s) {
-    screen       = s;
+    screen = s;
     needFullDraw = 1;
 }
 
