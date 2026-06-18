@@ -186,11 +186,13 @@ static void ConfigScreen_Task(void) {
 
 /* ── Run screen ──────────────────────────────────────────────────────────── */
 static int16_t prevBarH[SCANNER_NUM_SLOTS];
+static int     prevNearest = -2;
 
 static void DrawRunStatic(void) {
     int i;
     TFT_FillScreen(TFT_BLACK);
     for (i = 0; i < SCANNER_NUM_SLOTS; i++) prevBarH[i] = -1;
+    prevNearest = -2;
 
     TFT_FillRect(0, STATUS_Y, TFT_W, STATUS_H, TFT_DKGRAY);
     DrawButton(BACK_X, BACK_Y, BACK_W, BACK_H, "BACK", TFT_DKGRAY, TFT_WHITE, 2);
@@ -213,10 +215,13 @@ static void DrawBars(void) {
             if (barH > BAR_AREA_H) barH = BAR_AREA_H;
         }
 
-        if (barH == prevBarH[i]) continue;   /* nothing changed for this slot */
+        /* Skip redraw only when both height and nearest-status are unchanged */
+        int isNearest    = (i == nearest  && d > 0);
+        int wasNearest   = (i == prevNearest);
+        if (barH == prevBarH[i] && isNearest == wasNearest) continue;
         prevBarH[i] = barH;
 
-        col = (i == nearest && d > 0) ? TFT_RED : TFT_GREEN;
+        col = isNearest ? TFT_RED : TFT_GREEN;
 
         int16_t bx = (int16_t)(i * SCANNER_BAR_PX);
         TFT_FillRect(bx, 0, SCANNER_BAR_PX, BAR_AREA_H - barH, TFT_BLACK);
@@ -234,6 +239,7 @@ static void DrawBars(void) {
         snprintf(buf, sizeof(buf), "  --- mm");
     }
     TFT_DrawString(144, STATUS_Y + 12, buf, TFT_YELLOW, TFT_DKGRAY, 2);
+    prevNearest = nearest;
 }
 
 static void RunScreen_Task(void) {
