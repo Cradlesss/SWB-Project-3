@@ -173,7 +173,7 @@ void TFT_Init(void) {
                                    0x48,0x08,0x0F,0x0C,0x31,0x36,0x0F};
       SendCmdData(0xE1,d,15); }
 
-    { static const uint8_t d[] = {0x48}; SendCmdData(0x36,d,1); }
+    { static const uint8_t d[] = {0x40}; SendCmdData(0x36,d,1); }
 
     SendCmdData(0x11, NULL, 0); HAL_Delay(120);
     SendCmdData(0x29, NULL, 0); HAL_Delay(20);
