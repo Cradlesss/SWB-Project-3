@@ -1,4 +1,20 @@
 /* USER CODE BEGIN Header */
+/**
+  ******************************************************************************
+  * @file           : main.c
+  * @brief          : Main program body
+  ******************************************************************************
+  * @attention
+  *
+  * Copyright (c) 2026 STMicroelectronics.
+  * All rights reserved.
+  *
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
+  *
+  ******************************************************************************
+  */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -15,7 +31,6 @@
 #include "tft_ili9341.h"
 #include "touch_xpt2046.h"
 #include "scanner.h"
-#include "stepper.h"
 #include "gui.h"
 #include <stdio.h>
 #include <string.h>
@@ -28,8 +43,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define TX_MSG_MAX_LEN  120
-#define TX_QUEUE_SIZE    16
+#define TX_MSG_MAX_LEN 120
+#define TX_QUEUE_SIZE 16
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -151,9 +166,6 @@ int main(void)
   Scanner_Init();
   UART_SendText("Scanner ok\r\n");
 
-  Stepper_Init();
-  UART_SendText("Stepper ok\r\n");
-
   GUI_Init();
   UART_SendText("GUI ok - showing config screen\r\n");
 
@@ -165,7 +177,6 @@ int main(void)
   while (1)
   {
     Scanner_Task();
-    Stepper_Task();
     GUI_Task();
     /* USER CODE END WHILE */
 

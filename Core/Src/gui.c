@@ -253,6 +253,6 @@ void GUI_SetScreen(GuiScreen s) {
 void GUI_Task(void) {
     switch (screen) {
     case GUI_CONFIG: ConfigScreen_Task(); break;
-    case GUI_RUN:    RunScreen_Task();    break;
+    case GUI_RUN: RunScreen_Task(); break;
     }
 }

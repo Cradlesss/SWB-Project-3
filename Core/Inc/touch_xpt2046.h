@@ -11,7 +11,7 @@
 #define TOUCH_INVERT_X 1
 #define TOUCH_INVERT_Y 0
 
-void    Touch_Init(void);
+void Touch_Init(void);
 uint8_t Touch_IsPressed(void);
 uint8_t Touch_GetXY(uint16_t *sx, uint16_t *sy);
 

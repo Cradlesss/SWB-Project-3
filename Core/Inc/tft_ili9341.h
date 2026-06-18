@@ -3,8 +3,8 @@
 
 #include <stdint.h>
 
-#define TFT_W  320
-#define TFT_H  240
+#define TFT_W 320
+#define TFT_H 240
 
 #define TFT_BLACK 0x0000u
 #define TFT_WHITE 0xFFFFu

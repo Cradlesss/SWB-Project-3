@@ -16,10 +16,11 @@ static int32_t distMm = -1;
 static uint8_t ready = 0;
 
 static void TrigDelayUs(uint32_t us) {
+    uint32_t period = htim2.Instance->ARR + 1u;
     uint32_t start = htim2.Instance->CNT;
     while (1) {
         uint32_t now = htim2.Instance->CNT;
-        uint32_t elapsed = (now >= start) ? (now - start) : (20000u - start + now);
+        uint32_t elapsed = (now >= start) ? (now - start) : (period - start + now);
         if (elapsed >= us) break;
     }
 }
@@ -35,6 +36,7 @@ void HCSR04_Init(void) {
 void HCSR04_Trigger(void) {
     if (state != IDLE) return;
     __HAL_TIM_SET_COUNTER(&htim3, 0);
+    riseCapture = 0;
     HAL_GPIO_WritePin(SONAR_TRIG_GPIO_Port, SONAR_TRIG_Pin, GPIO_PIN_RESET);
     TrigDelayUs(2);
     HAL_GPIO_WritePin(SONAR_TRIG_GPIO_Port, SONAR_TRIG_Pin, GPIO_PIN_SET);
