@@ -3,9 +3,9 @@
 #include "main.h"
 #include "spi.h"
 
-#define CMD_X   0xD0u
-#define CMD_Y   0x90u
-#define CMD_Z1  0xB0u
+#define CMD_X 0xD0u
+#define CMD_Y 0x90u
+#define CMD_Z1 0xB0u
 
 static uint16_t ReadChannel(uint8_t cmd) {
     uint8_t tx[3] = {cmd, 0x00u, 0x00u};
@@ -27,7 +27,7 @@ uint8_t Touch_IsPressed(void) {
 
 uint8_t Touch_GetXY(uint16_t *sx, uint16_t *sy) {
     uint16_t rawX, rawY;
-    int32_t  mx, my;
+    int32_t mx, my;
 
     if (!Touch_IsPressed()) return 0;
 

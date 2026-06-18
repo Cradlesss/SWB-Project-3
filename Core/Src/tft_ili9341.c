@@ -3,11 +3,11 @@
 #include "spi.h"
 #include <string.h>
 
-#define TFT_CS_LOW()   HAL_GPIO_WritePin(TFT_CS_GPIO_Port,  TFT_CS_Pin,  GPIO_PIN_RESET)
-#define TFT_CS_HIGH()  HAL_GPIO_WritePin(TFT_CS_GPIO_Port,  TFT_CS_Pin,  GPIO_PIN_SET)
-#define TFT_DC_CMD()   HAL_GPIO_WritePin(TFT_DC_GPIO_Port,  TFT_DC_Pin,  GPIO_PIN_RESET)
-#define TFT_DC_DATA()  HAL_GPIO_WritePin(TFT_DC_GPIO_Port,  TFT_DC_Pin,  GPIO_PIN_SET)
-#define TFT_RST_LOW()  HAL_GPIO_WritePin(TFT_RST_GPIO_Port, TFT_RST_Pin, GPIO_PIN_RESET)
+#define TFT_CS_LOW() HAL_GPIO_WritePin(TFT_CS_GPIO_Port, TFT_CS_Pin, GPIO_PIN_RESET)
+#define TFT_CS_HIGH() HAL_GPIO_WritePin(TFT_CS_GPIO_Port, TFT_CS_Pin, GPIO_PIN_SET)
+#define TFT_DC_CMD() HAL_GPIO_WritePin(TFT_DC_GPIO_Port, TFT_DC_Pin, GPIO_PIN_RESET)
+#define TFT_DC_DATA() HAL_GPIO_WritePin(TFT_DC_GPIO_Port, TFT_DC_Pin, GPIO_PIN_SET)
+#define TFT_RST_LOW() HAL_GPIO_WritePin(TFT_RST_GPIO_Port, TFT_RST_Pin, GPIO_PIN_RESET)
 #define TFT_RST_HIGH() HAL_GPIO_WritePin(TFT_RST_GPIO_Port, TFT_RST_Pin, GPIO_PIN_SET)
 
 static const uint8_t font5x8[95][5] = {
@@ -147,17 +147,17 @@ void TFT_Init(void) {
     SendCmdData(0x01, NULL, 0); HAL_Delay(120);
     SendCmdData(0x28, NULL, 0);
 
-    { static const uint8_t d[] = {0x00,0xC1,0x30};           SendCmdData(0xCF,d,3); }
-    { static const uint8_t d[] = {0x64,0x03,0x12,0x81};      SendCmdData(0xED,d,4); }
-    { static const uint8_t d[] = {0x85,0x00,0x78};           SendCmdData(0xE8,d,3); }
+    { static const uint8_t d[] = {0x00,0xC1,0x30}; SendCmdData(0xCF,d,3); }
+    { static const uint8_t d[] = {0x64,0x03,0x12,0x81}; SendCmdData(0xED,d,4); }
+    { static const uint8_t d[] = {0x85,0x00,0x78}; SendCmdData(0xE8,d,3); }
     { static const uint8_t d[] = {0x39,0x2C,0x00,0x34,0x02}; SendCmdData(0xCB,d,5); }
-    { static const uint8_t d[] = {0x20};                     SendCmdData(0xF7,d,1); }
-    { static const uint8_t d[] = {0x00,0x00};                SendCmdData(0xEA,d,2); }
+    { static const uint8_t d[] = {0x20}; SendCmdData(0xF7,d,1); }
+    { static const uint8_t d[] = {0x00,0x00}; SendCmdData(0xEA,d,2); }
 
-    { static const uint8_t d[] = {0x23};      SendCmdData(0xC0,d,1); }
-    { static const uint8_t d[] = {0x10};      SendCmdData(0xC1,d,1); }
+    { static const uint8_t d[] = {0x23}; SendCmdData(0xC0,d,1); }
+    { static const uint8_t d[] = {0x10}; SendCmdData(0xC1,d,1); }
     { static const uint8_t d[] = {0x3E,0x28}; SendCmdData(0xC5,d,2); }
-    { static const uint8_t d[] = {0x86};      SendCmdData(0xC7,d,1); }
+    { static const uint8_t d[] = {0x86}; SendCmdData(0xC7,d,1); }
 
     { static const uint8_t d[] = {0x55}; SendCmdData(0x3A,d,1); }
     { static const uint8_t d[] = {0x00,0x18}; SendCmdData(0xB1,d,2); }
@@ -166,11 +166,9 @@ void TFT_Init(void) {
     { static const uint8_t d[] = {0x00}; SendCmdData(0xF2,d,1); }
     { static const uint8_t d[] = {0x01}; SendCmdData(0x26,d,1); }
 
-    { static const uint8_t d[] = {0x0F,0x31,0x2B,0x0C,0x0E,0x08,0x4E,0xF1,
-                                   0x37,0x07,0x10,0x03,0x0E,0x09,0x00};
+    { static const uint8_t d[] = {0x0F,0x31,0x2B,0x0C,0x0E,0x08,0x4E,0xF1, 0x37,0x07,0x10,0x03,0x0E,0x09,0x00};
       SendCmdData(0xE0,d,15); }
-    { static const uint8_t d[] = {0x00,0x0E,0x14,0x03,0x11,0x07,0x31,0xC1,
-                                   0x48,0x08,0x0F,0x0C,0x31,0x36,0x0F};
+    { static const uint8_t d[] = {0x00,0x0E,0x14,0x03,0x11,0x07,0x31,0xC1, 0x48,0x08,0x0F,0x0C,0x31,0x36,0x0F};
       SendCmdData(0xE1,d,15); }
 
     { static const uint8_t d[] = {0x40}; SendCmdData(0x36,d,1); }
@@ -188,10 +186,11 @@ void TFT_FillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color) {
     uint8_t lo = color & 0xFF;
     uint16_t i;
 
-    for (i = 0; i < sizeof(pixBuf); i += 2) { pixBuf[i] = hi; pixBuf[i+1] = lo; }
+    for (i = 0; i < sizeof(pixBuf); i += 2) { 
+        pixBuf[i] = hi; pixBuf[i+1] = lo; 
+    }
 
-    SetWindow((uint16_t)x, (uint16_t)y,
-              (uint16_t)(x + w - 1), (uint16_t)(y + h - 1));
+    SetWindow((uint16_t)x, (uint16_t)y, (uint16_t)(x + w - 1), (uint16_t)(y + h - 1));
 
     while (total >= sizeof(pixBuf) / 2) {
         HAL_SPI_Transmit(&hspi1, pixBuf, sizeof(pixBuf), HAL_MAX_DELAY);
@@ -208,10 +207,10 @@ void TFT_FillScreen(uint16_t color) {
 }
 
 void TFT_DrawRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color) {
-    TFT_FillRect(x,     y,     w, 1, color);
-    TFT_FillRect(x,     y+h-1, w, 1, color);
-    TFT_FillRect(x,     y,     1, h, color);
-    TFT_FillRect(x+w-1, y,     1, h, color);
+    TFT_FillRect(x, y, w, 1, color);
+    TFT_FillRect(x, y+h-1, w, 1, color);
+    TFT_FillRect(x, y, 1, h, color);
+    TFT_FillRect(x+w-1, y, 1, h, color);
 }
 
 void TFT_DrawChar(int16_t x, int16_t y, char c, uint16_t fg, uint16_t bg, uint8_t sz) {
@@ -232,24 +231,21 @@ void TFT_DrawChar(int16_t x, int16_t y, char c, uint16_t fg, uint16_t bg, uint8_
             charBuf[idx++] = (uint8_t)(bg >> 8);
             charBuf[idx++] = (uint8_t)(bg & 0xFF);
         }
-        SetWindow((uint16_t)x, (uint16_t)y,
-                  (uint16_t)(x + 5), (uint16_t)(y + 7));
+        SetWindow((uint16_t)x, (uint16_t)y, (uint16_t)(x + 5), (uint16_t)(y + 7));
         HAL_SPI_Transmit(&hspi1, charBuf, sizeof(charBuf), HAL_MAX_DELAY);
         TFT_CS_HIGH();
     } else {
         for (col = 0; col < 5; col++) {
             for (row = 0; row < 8; row++) {
                 uint16_t color = (glyph[col] & (1u << row)) ? fg : bg;
-                TFT_FillRect((int16_t)(x + col * sz), (int16_t)(y + row * sz),
-                             sz, sz, color);
+                TFT_FillRect((int16_t)(x + col * sz), (int16_t)(y + row * sz), sz, sz, color);
             }
         }
         TFT_FillRect((int16_t)(x + 5 * sz), y, sz, (int16_t)(8 * sz), bg);
     }
 }
 
-void TFT_DrawString(int16_t x, int16_t y, const char *s,
-                    uint16_t fg, uint16_t bg, uint8_t sz) {
+void TFT_DrawString(int16_t x, int16_t y, const char *s, uint16_t fg, uint16_t bg, uint8_t sz) {
     while (*s) {
         TFT_DrawChar(x, y, *s++, fg, bg, sz);
         x += (int16_t)(6 * sz);

@@ -15,6 +15,7 @@
 #include "tft_ili9341.h"
 #include "touch_xpt2046.h"
 #include "scanner.h"
+#include "stepper.h"
 #include "gui.h"
 #include <stdio.h>
 #include <string.h>
@@ -84,8 +85,7 @@ void UART_StartNextTx(void) {
     if (++txQTail >= TX_QUEUE_SIZE) txQTail = 0;
     txQCount--;
     txBusy = 1;
-    if (HAL_UART_Transmit_DMA(&huart2, (uint8_t *)txCurBuf,
-                               (uint16_t)strlen(txCurBuf)) != HAL_OK)
+    if (HAL_UART_Transmit_DMA(&huart2, (uint8_t *)txCurBuf, (uint16_t)strlen(txCurBuf)) != HAL_OK)
         txBusy = 0;
 }
 
@@ -151,6 +151,9 @@ int main(void)
   Scanner_Init();
   UART_SendText("Scanner ok\r\n");
 
+  Stepper_Init();
+  UART_SendText("Stepper ok\r\n");
+
   GUI_Init();
   UART_SendText("GUI ok - showing config screen\r\n");
 
@@ -162,6 +165,7 @@ int main(void)
   while (1)
   {
     Scanner_Task();
+    Stepper_Task();
     GUI_Task();
     /* USER CODE END WHILE */
 

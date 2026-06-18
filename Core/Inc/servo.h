@@ -6,6 +6,6 @@
 
 void Servo_Init(void);
 void Servo_SetAngle(int angle);
-int  Servo_GetAngle(void);
+int Servo_GetAngle(void);
 
 #endif

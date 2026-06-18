@@ -2,6 +2,7 @@
 #include "tft_ili9341.h"
 #include "touch_xpt2046.h"
 #include "scanner.h"
+#include "stepper.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -32,10 +33,14 @@ extern volatile uint32_t appTickMs;
 #define HIT_ROW2_Y (ROW2_Y - 6)
 #define HIT_ROW3_Y (ROW3_Y - 6)
 
-#define START_X 80
+#define START_X 10
 #define START_Y 185
-#define START_W 160
+#define START_W 140
 #define START_H 40
+#define CALIB_BTN_X 170
+#define CALIB_BTN_Y 185
+#define CALIB_BTN_W 140
+#define CALIB_BTN_H 40
 
 #define BACK_X 0
 #define BACK_Y STATUS_Y
@@ -53,8 +58,7 @@ static int cfgLeftAngle = 30;
 static int cfgRightAngle = 150;
 static int cfgSweepSec = 4;
 
-static void DrawButton(int16_t x, int16_t y, int16_t w, int16_t h,
-                       const char *lbl, uint16_t bg, uint16_t fg, uint8_t sz) {
+static void DrawButton(int16_t x, int16_t y, int16_t w, int16_t h, const char *lbl, uint16_t bg, uint16_t fg, uint8_t sz) {
     TFT_FillRect(x, y, w, h, bg);
     TFT_DrawRect(x, y, w, h, fg);
     int16_t tx = (int16_t)(x + (w - (int16_t)(strlen(lbl) * 6u * sz)) / 2);
@@ -62,10 +66,8 @@ static void DrawButton(int16_t x, int16_t y, int16_t w, int16_t h,
     TFT_DrawString(tx, ty, lbl, fg, bg, sz);
 }
 
-static uint8_t TouchInRect(uint16_t tx, uint16_t ty,
-                            int16_t rx, int16_t ry, int16_t rw, int16_t rh) {
-    return (tx >= (uint16_t)rx && tx < (uint16_t)(rx + rw) &&
-            ty >= (uint16_t)ry && ty < (uint16_t)(ry + rh)) ? 1u : 0u;
+static uint8_t TouchInRect(uint16_t tx, uint16_t ty, int16_t rx, int16_t ry, int16_t rw, int16_t rh) {
+    return (tx >= (uint16_t)rx && tx < (uint16_t)(rx + rw) && ty >= (uint16_t)ry && ty < (uint16_t)(ry + rh)) ? 1u : 0u;
 }
 
 static void DrawConfigValues(void) {
@@ -106,6 +108,7 @@ static void DrawConfigScreen(void) {
     TFT_DrawString(COL_UNIT, ROW3_Y + 4, "s  ", TFT_GRAY, TFT_BLACK, 2);
 
     DrawButton(START_X, START_Y, START_W, START_H, "START", TFT_DKGREEN, TFT_WHITE, 2);
+    DrawButton(CALIB_BTN_X, CALIB_BTN_Y, CALIB_BTN_W, CALIB_BTN_H, "CALIB", TFT_DKGRAY, TFT_WHITE, 2);
 
     DrawConfigValues();
 }
@@ -162,6 +165,9 @@ static void ConfigScreen_Task(void) {
         Scanner_SetConfig(cfgLeftAngle, cfgRightAngle, cfgSweepSec * 1000);
         GUI_SetScreen(GUI_RUN);
         Scanner_Start();
+    } else if (TouchInRect(tx, ty, CALIB_BTN_X, CALIB_BTN_Y, CALIB_BTN_W, CALIB_BTN_H)) {
+        UART_SendText("CALIB pressed\r\n");
+        GUI_SetScreen(GUI_CALIB);
     } else {
         UART_SendText("TOUCH: no button hit\r\n");
     }
@@ -229,6 +235,7 @@ static void RunScreen_Task(void) {
 
     if (Scanner_SweepDone()) {
         DrawBars();
+        Stepper_GoToSlot(Scanner_GetNearestSlot());
         Scanner_ClearSweepDone();
     }
 
@@ -239,6 +246,96 @@ static void RunScreen_Task(void) {
     if (TouchInRect(tx, ty, BACK_X, BACK_Y, BACK_W, BACK_H)) {
         UART_SendText("BACK pressed -> config screen\r\n");
         Scanner_Stop();
+        GUI_SetScreen(GUI_CONFIG);
+    }
+}
+
+#define CS_JOG_X 5
+#define CS_JOG_Y 46
+#define CS_JOG_W 60
+#define CS_JOG_H 32
+#define CS_JOGR_X 255
+#define CS_SETL_X 10
+#define CS_SETC_X 115
+#define CS_SETR_X 220
+#define CS_SET_Y 98
+#define CS_SET_W 90
+#define CS_SET_H 30
+#define CS_DONE_X 110
+#define CS_DONE_Y 196
+#define CS_DONE_W 100
+#define CS_DONE_H 32
+#define CS_STEP_X 155
+#define CS_STEP_Y 50
+#define CS_STEP_W 90
+#define CS_STEP_H 24
+#define CS_STAT_Y 148
+
+static int32_t prevCalibStep = 0x7FFFFFFF;
+
+static void DrawCalibStatus(void) {
+    int cs = Stepper_GetCalibSet();
+    char buf[32];
+    snprintf(buf, sizeof(buf), "L:%s  C:%s  R:%s",
+             (cs & 0x1) ? "SET" : "---",
+             (cs & 0x2) ? "SET" : "---",
+             (cs & 0x4) ? "SET" : "---");
+    TFT_FillRect(0, CS_STAT_Y, TFT_W, 20, TFT_BLACK);
+    TFT_DrawString(8, CS_STAT_Y + 2, buf, TFT_WHITE, TFT_BLACK, 2);
+}
+
+static void DrawCalibScreen(void) {
+    TFT_FillScreen(TFT_BLACK);
+    TFT_DrawString(82, 10, "CALIB POINTER", TFT_WHITE, TFT_BLACK, 2);
+    DrawButton(CS_JOG_X, CS_JOG_Y, CS_JOG_W, CS_JOG_H, "<<", TFT_DKGRAY, TFT_WHITE, 2);
+    DrawButton(CS_JOGR_X, CS_JOG_Y, CS_JOG_W, CS_JOG_H, ">>", TFT_DKGRAY, TFT_WHITE, 2);
+    TFT_DrawString(72, CS_STEP_Y + 4, "STEP:", TFT_GRAY, TFT_BLACK, 2);
+    DrawButton(CS_SETL_X, CS_SET_Y, CS_SET_W, CS_SET_H, "SET L", TFT_DKGRAY, TFT_WHITE, 2);
+    DrawButton(CS_SETC_X, CS_SET_Y, CS_SET_W, CS_SET_H, "SET C", TFT_DKGRAY, TFT_WHITE, 2);
+    DrawButton(CS_SETR_X, CS_SET_Y, CS_SET_W, CS_SET_H, "SET R", TFT_DKGRAY, TFT_WHITE, 2);
+    DrawCalibStatus();
+    DrawButton(CS_DONE_X, CS_DONE_Y, CS_DONE_W, CS_DONE_H, "DONE", TFT_DKGREEN, TFT_WHITE, 2);
+    prevCalibStep = 0x7FFFFFFF;
+}
+
+static void CalibScreen_Task(void) {
+    uint16_t tx, ty;
+    char buf[16];
+
+    if (needFullDraw) { DrawCalibScreen(); needFullDraw = 0; return; }
+
+    {
+        int32_t s = Stepper_GetCurrentStep();
+        if (s != prevCalibStep) {
+            prevCalibStep = s;
+            snprintf(buf, sizeof(buf), "%6d", (int)s);
+            TFT_FillRect(CS_STEP_X, CS_STEP_Y, CS_STEP_W, CS_STEP_H, TFT_BLACK);
+            TFT_DrawString(CS_STEP_X + 2, CS_STEP_Y + 4, buf, TFT_YELLOW, TFT_BLACK, 2);
+        }
+    }
+
+    if (!Touch_GetXY(&tx, &ty)) return;
+    if (appTickMs - lastTouchMs < DEBOUNCE_MS) return;
+    lastTouchMs = appTickMs;
+
+    if (TouchInRect(tx, ty, CS_JOG_X, CS_JOG_Y, CS_JOG_W, CS_JOG_H)) {
+        Stepper_JogStep(-STEPPER_JOG_STEPS);
+    } else if (TouchInRect(tx, ty, CS_JOGR_X, CS_JOG_Y, CS_JOG_W, CS_JOG_H)) {
+        Stepper_JogStep(STEPPER_JOG_STEPS);
+    } else if (TouchInRect(tx, ty, CS_SETL_X, CS_SET_Y, CS_SET_W, CS_SET_H)) {
+        Stepper_CalibSetLeft();
+        UART_SendText("CALIB: left set\r\n");
+        DrawCalibStatus();
+    } else if (TouchInRect(tx, ty, CS_SETC_X, CS_SET_Y, CS_SET_W, CS_SET_H)) {
+        Stepper_CalibSetCenter();
+        UART_SendText("CALIB: center set\r\n");
+        DrawCalibStatus();
+    } else if (TouchInRect(tx, ty, CS_SETR_X, CS_SET_Y, CS_SET_W, CS_SET_H)) {
+        Stepper_CalibSetRight();
+        UART_SendText("CALIB: right set\r\n");
+        DrawCalibStatus();
+    } else if (TouchInRect(tx, ty, CS_DONE_X, CS_DONE_Y, CS_DONE_W, CS_DONE_H)) {
+        UART_SendText("CALIB: done\r\n");
         GUI_SetScreen(GUI_CONFIG);
     }
 }
@@ -257,5 +354,6 @@ void GUI_Task(void) {
     switch (screen) {
     case GUI_CONFIG: ConfigScreen_Task(); break;
     case GUI_RUN:    RunScreen_Task();    break;
+    case GUI_CALIB:  CalibScreen_Task();  break;
     }
 }
